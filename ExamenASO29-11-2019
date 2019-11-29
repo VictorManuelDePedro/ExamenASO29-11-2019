@@ -1,0 +1,30 @@
+Install-Module -Name Posh-SSH -RequiredVersion 2.0.2
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
+New-SSHsession -ComputerName 10.202.0.176 -Credential (Get-Credential) -Force
+
+Set-SCPFile -LocalFile usuarios.txt -ComputerName 10.202.0.177 -RemotePath . -Credential (Get-Credential)
+Invoke-SSHCommand -Index 0 "ls usuarios.txt"
+Invoke-SSHCommand -Index 0 "ls -la usuarios.txt"
+
+#crear usuarios en Ubuntu mediante una conexion SSH
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
+Install-Module -Name Posh-SSH -RequiredVersion 2.2
+New-SSHSession -Computer 10.202.0.177
+
+foreach ($usuarios in gc .\usuarios.txt)
+{
+(Invoke-SSHCommand -Index 0 "sudo useradd $usuarios")
+}
+$oSessions = New-SSHSession -ComputerName 10.202.0.177     -Credential $credencial
+$Stream = $oSessions.Session.CreateShellStream("PS-SSH", 0, 0, 0, 0, 1000)
+Invoke-SSHStreamExpectSecureAction -ShellStream $Stream -Command
+
+
+Import-Module Posh-SSH
+
+Install-Module  -Name Posh-SSH -Force
+
+New-SSHSession -Computer 10.202.0.177
+Invoke-SSHCommand -Index 1 'echo "echo hola" > script3.sh'
+Invoke-SSHCommand -Index 2 "cat script3.sh"
+Invoke-SSHCommand -Index 3 "sh script3.sh"
